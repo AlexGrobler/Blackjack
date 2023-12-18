@@ -23,7 +23,13 @@ namespace CA3
 
             //if the player hasn't lost, and choose stick, then deal dealer's cards
             //dealer must keep drawing until they get at least 17 (dealer only stops once score is 17 or higher or bust)
-            //
+            
+            //compare player's card value vs. dealer's and determine winner
+
+            //record win/loss/draw and add to user score
+            
+            //prompt user for a new game or to quit
+
 
         }
     }
