@@ -10,10 +10,45 @@ namespace CA3
     {
         static void Main(string[] args)
         {
+            int playerScore = 0;
+            int handValue = 0;
+            Deck deck = new Deck();
+            deck.ShuffleDeck();
+
+            foreach (Card card in deck.CardDeck) 
+            {
+                Console.WriteLine("Suit: {0}, Rank: {1}", card.Suit, card.Rank);
+            }
+
+            while (true)
+            {
+                Console.WriteLine("Your Score Is {0}", playerScore);
+                Console.WriteLine("Would You Like To Play A Game? type yes or no");
+                string keepPlaying = Console.ReadLine();
+
+                if (keepPlaying.ToLower() == "no")
+                {
+                    break;
+                }
+                else if (keepPlaying.ToLower() == "yes")
+                {
+                    continue;
+                }
+                else
+                {
+                    Console.WriteLine("Please type yes or no");
+                }
+
+
+ 
+            }
+
+            Console.ReadLine(); 
+
             //display user score
             //prompt user for playing a game
             //clear console
-            //select 2 card objects from array of all posible cards at random
+            //select 2 card objects from list of all posible cards at random
             //display card value
             //ask user if they want to receive another card or stop (stick or twist)
 
@@ -29,8 +64,6 @@ namespace CA3
             //record win/loss/draw and add to user score
             
             //prompt user for a new game or to quit
-
-
         }
     }
 }
