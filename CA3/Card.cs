@@ -38,22 +38,22 @@ namespace CA3
         public CardSuit Suit { get; set; }
         public CardRank Rank { get; set; }
 
-        public Dictionary<CardRank, int> CardValues;
- 
         public Card(CardSuit suit, CardRank rank) 
         {
             Suit = suit;
             Rank = rank;    
         }
 
+        public Card() { }
+
         public int GetCardValue(int handValue)
         {
-            int value = (int)Rank;
-            if (value >= 10) 
+            int cardValue = (int)Rank;
+            if (cardValue > 10) 
             {
                 return 10;
             }
-            if (value == 0) 
+            if (cardValue == 0) 
             {
                 if (handValue + 11 > 21) 
                 {
@@ -61,7 +61,7 @@ namespace CA3
                 }
                 return 11;
             }
-            return value;
+            return cardValue;
         }
 
 

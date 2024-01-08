@@ -13,13 +13,12 @@ namespace CA3
 
         public Deck() 
         {
-            foreach (CardSuit suit in Enum.GetValues(typeof(CardSuit)))
-            {
-                foreach (CardRank rank in Enum.GetValues(typeof(CardRank)))
-                {
-                    CardDeck.Add(new Card(suit, rank));
-                }
-            }
+            ResetDeck();
+        }
+
+        public Deck(List<Card> customDeck)
+        {
+            CardDeck = customDeck;
         }
 
         //Fisher-Yates shuffle
@@ -34,6 +33,34 @@ namespace CA3
                 Card tempValue = CardDeck[k];
                 CardDeck[k] = CardDeck[n];
                 CardDeck[n] = tempValue;
+            }
+        }
+
+        public Card DrawCard(bool revealCard) 
+        {
+            Card drawnCard = CardDeck[0];
+            CardDeck.RemoveAt(0);
+            if (revealCard)
+            {
+                Console.WriteLine("{0} of {1}", drawnCard.Rank, drawnCard.Suit);
+            }
+            else 
+            {
+                Console.WriteLine("[Card Is Hidden]");
+            }
+            return drawnCard;
+        }
+
+
+        public void ResetDeck() 
+        {
+            CardDeck.Clear();
+            foreach (CardSuit suit in Enum.GetValues(typeof(CardSuit)))
+            {
+                foreach (CardRank rank in Enum.GetValues(typeof(CardRank)))
+                {
+                    CardDeck.Add(new Card(suit, rank));
+                }
             }
         }
     }
