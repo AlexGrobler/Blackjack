@@ -8,17 +8,26 @@ namespace CA3
 {
     internal class Program
     {
+        private enum EndCondition
+        {
+            None,
+            Draw,
+            PlayerWins,
+            DealerWins
+        }
+
         static void Main(string[] args)
         {
-
-            bool keepPlaying = false;
+            (int PlayerWins, int DealerWins, int Draws) score = (0, 0, 0);
+            bool playGame = false;
             bool isFirstRound = true; //change to int and keep track of rounds
-            bool isPlayerTurn = true;
 
             bool dealerBusts = false;
             bool playerBusts = false;
 
             bool keepAppRunning = true;
+
+            EndCondition endCond = EndCondition.None;
 
             Deck deck = new Deck();
 
@@ -27,53 +36,74 @@ namespace CA3
 
             while (keepAppRunning)
             {
-                if (!keepPlaying)
+                while (!playGame)
                 {
-                    Menu(deck, ref keepPlaying, ref keepAppRunning);
+                    keepAppRunning = Menu(deck, score, ref playGame);
                 }
 
-                while (keepPlaying)
+                StartRound(deck, dealersHand, playersHand);
+                playerBusts = PlayersTurn(deck, playersHand);
+                if (!playerBusts)
                 {
-                    StartRound(deck, dealersHand, playersHand);
-
-                    playerBusts = PlayersTurn(deck, playersHand);
-
-                    if(!playerBusts)
-                    {
-                        dealerBusts = DealersTurn(deck, dealersHand, ref isFirstRound);
-                    }
-
-                    if (!playerBusts && !dealerBusts) 
-                    {
-
-                    }
+                    dealerBusts = DealersTurn(deck, dealersHand, ref isFirstRound);
                 }
+                if (!playerBusts && !dealerBusts)
+                {
+                    endCond = CompareHands(playersHand, dealersHand);
+                }
+
+                UpdateScore(endCond, ref score);
+                ResetGame(deck, dealersHand, playersHand, ref endCond, ref playGame);
+                Console.WriteLine("\n\n==GAME OVER==");
             }
 
             Console.WriteLine("\n\n======================");
-            Console.WriteLine("==GAME OVER==");
+            Console.WriteLine("==APP CLOSED==");
             Console.ReadLine();
         }
 
-        private static void Menu(Deck deck, ref bool isPlaying, ref bool keepAppRunning)
+        private static void ResetGame(Deck deck, List<Card> dealersHand, List<Card> playersHand, ref EndCondition endCond, ref bool playGame)
         {
-            Console.WriteLine("Would You Like To Play A Game? type yes or no");
-            string keepPlaying = Console.ReadLine();
-            if (keepPlaying.ToLower() == "no")
+            playGame = false;
+            endCond = EndCondition.None;
+            dealersHand.Clear();
+            playersHand.Clear();
+            deck.ResetDeck();
+            deck.ShuffleDeck();
+        }
+
+        private static void ShowScore((int, int, int) score) 
+        {
+            Console.WriteLine("\n\n=====Score=====");
+            Console.WriteLine("Wins: {0}", score.Item1);
+            Console.WriteLine("Loses: {0}", score.Item2);
+            Console.WriteLine("Draws: {0}", score.Item3);
+            Console.WriteLine("==============\n\n");
+        }
+
+        private static bool Menu(Deck deck, (int, int, int) score, ref bool playGame)
+        {
+            Console.WriteLine("Would You Like To Play A Game Or View Score? type yes, no or score");
+            string command = Console.ReadLine().ToLower();
+            if (command == "no")
             {
-                keepAppRunning = false;
+                return false;
             }
-            else if (keepPlaying.ToLower() == "yes")
+            else if (command == "yes")
             {
-                isPlaying = true;
-                deck.ResetDeck();
-                deck.ShuffleDeck();
-                Console.Clear();
+                playGame = true;
+            }
+            else if (command == "score") 
+            {
+                ShowScore(score);
+                playGame = false;
             }
             else
             {
-                Console.WriteLine("Please type yes or no");
+                Console.WriteLine("Please type yes, no or score");
             }
+
+            return true;
         }
 
         private static void StartRound(Deck deck, List<Card> dealersHand, List<Card> playersHand)
@@ -101,7 +131,7 @@ namespace CA3
         private static bool PlayersTurn(Deck deck, List<Card> playersHand)
         {
             Console.WriteLine("\n\nPlayer's Turn");
-            Console.WriteLine("D================\n");
+            Console.WriteLine("================\n");
 
             while (true) 
             {
@@ -113,7 +143,7 @@ namespace CA3
                 {
                     Twist(deck, playersHand);
 
-                    if (CheckHand(playersHand) > 21) 
+                    if (GetHandValue(playersHand) > 21) 
                     {
                         return true;
                     }
@@ -144,7 +174,7 @@ namespace CA3
             while (true) 
             {
                 ShowHand(dealersHand);
-                int handValue = CheckHand(dealersHand);
+                int handValue = GetHandValue(dealersHand);
 
                 if (handValue > 21) 
                 {
@@ -164,7 +194,7 @@ namespace CA3
 
         }
 
-        private static int CheckHand(List<Card> hand)
+        private static int GetHandValue(List<Card> hand)
         {
             int handValue = 0;
             int aceCount = 0;
@@ -192,6 +222,11 @@ namespace CA3
                 }
             }
 
+            Console.WriteLine("Hand value: {0}", handValue);
+            if (handValue > 21)
+            {
+                Console.WriteLine("================BUST================");
+            }
 
             return handValue;
         }
@@ -206,36 +241,59 @@ namespace CA3
             Console.WriteLine("================================");
         }
 
-        private static void CompareHands(List<Card> playersHand, List<Card> dealersHand) 
+        private static EndCondition CompareHands(List<Card> playersHand, List<Card> dealersHand) 
         {
             int playerHandValue = 0;
             int dealerHandValue = 0;
 
             Console.WriteLine("\n\nYour Hand");
             Console.WriteLine("======================");
+            ShowHand(playersHand);
             foreach (Card card in playersHand)
             {
                 playerHandValue += card.GetCardValue(playerHandValue);
             }
+            Console.WriteLine("Value = " + playerHandValue);
 
             Console.WriteLine("\n\nDealer's Hand");
             Console.WriteLine("======================");
+            ShowHand(dealersHand);
             foreach (Card card in dealersHand)
             {
                 dealerHandValue += card.GetCardValue(dealerHandValue);
             }
+            Console.WriteLine("Value = " + dealerHandValue);
 
             if (playerHandValue == dealerHandValue)
             {
-                //declare tie
+                Console.WriteLine("Draw!");
+                return EndCondition.Draw;
             }
             else if (playerHandValue > dealerHandValue)
             {
-                //declare player winner
+                Console.WriteLine("Player Wins!");
+                return EndCondition.PlayerWins;
             }
             else 
             {
-                //declare dealer winner
+                Console.WriteLine("House Wins!");
+                return EndCondition.DealerWins;
+            }
+        }
+
+        private static void UpdateScore(EndCondition endCond, ref (int, int, int) score) 
+        {
+            if (endCond == EndCondition.Draw)
+            {
+                score.Item3++;
+            }
+            if (endCond == EndCondition.PlayerWins) 
+            {
+                score.Item1++;
+            }
+            if (endCond == EndCondition.DealerWins)
+            {
+                score.Item2++;
             }
         }
     }
