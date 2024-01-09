@@ -19,12 +19,11 @@ namespace CA3
         static void Main(string[] args)
         {
             (int PlayerWins, int DealerWins, int Draws) score = (0, 0, 0);
-            bool playGame = false;
-            bool isFirstRound = true; //change to int and keep track of rounds
 
+            bool isPlayingGame = false;
+            bool isFirstRound = true; 
             bool dealerBusts = false;
             bool playerBusts = false;
-
             bool keepAppRunning = true;
 
             EndCondition endCond = EndCondition.None;
@@ -35,22 +34,24 @@ namespace CA3
             List<Card> dealersHand = new List<Card>();
             while (keepAppRunning)
             {
-                while (!playGame)
+                while (!isPlayingGame)
                 {
-                    keepAppRunning = Menu(deck, score, ref playGame);
+                    keepAppRunning = menu(deck, score, ref isPlayingGame);
                 }
 
-                StartRound(deck, dealersHand, playersHand);
-                playerBusts = PlayersTurn(deck, playersHand);
+                startRound(deck, dealersHand, playersHand);
+                pause();
+                playerBusts = playersTurn(deck, playersHand);
                 if (!playerBusts)
                 {
-                    dealerBusts = DealersTurn(deck, dealersHand, playersHand, ref isFirstRound);
+                    dealerBusts = dealersTurn(deck, dealersHand, playersHand, ref isFirstRound);
+                    pause();
                 }
 
-                endCond = DetermineWinner(playerBusts, dealerBusts, dealersHand, playersHand);
-                UpdateScore(endCond, ref score);
-                ResetGame(deck, dealersHand, playersHand, ref endCond, ref playGame);
-                Console.WriteLine("\n\n==GAME OVER==");
+                endCond = determineWinner(playerBusts, dealerBusts, dealersHand, playersHand);
+                pause();
+                updateScore(endCond, ref score);
+                resetGame(deck, dealersHand, playersHand, ref endCond, ref isPlayingGame);
             }
 
             Console.WriteLine("\n\n======================");
@@ -58,69 +59,25 @@ namespace CA3
             Console.ReadLine();
         }
 
-        private static EndCondition DetermineWinner(bool playerBusts, bool dealerBusts, List<Card> dealersHand, List<Card> playersHand)
+        private static bool menu(Deck deck, (int, int, int) score, ref bool playGame)
         {
-            if (!playerBusts && !dealerBusts)
-            {
-                Console.WriteLine("DRAW!");
-                return CompareHands(playersHand, dealersHand);
-            }
-            else if (playerBusts)
-            {
-                LogWithColor("House Wins!", ConsoleColor.Magenta);
-                return EndCondition.DealerWins;
-            }
-            else if (dealerBusts)
-            {
-                LogWithColor("Player Wins!", ConsoleColor.Green);
-                return EndCondition.PlayerWins;
-            }
-            LogWithColor("Could Not Determine Outcome", ConsoleColor.Red);   
-            return EndCondition.None;
-        }
-
-
-        private static void LogWithColor(string msg, ConsoleColor color) 
-        {
-            Console.ForegroundColor = color;    
-            Console.WriteLine(msg);
-            Console.ResetColor();
-        }
-
-        private static void ResetGame(Deck deck, List<Card> dealersHand, List<Card> playersHand, ref EndCondition endCond, ref bool playGame)
-        {
-            playGame = false;
-            endCond = EndCondition.None;
-            dealersHand.Clear();
-            playersHand.Clear();
-            deck.ResetDeck();
-            deck.ShuffleDeck();
-        }
-
-        private static void ShowScore((int, int, int) score) 
-        {
-            Console.WriteLine("\n\n=====Score=====");
-            Console.WriteLine("Wins: {0}", score.Item1);
-            Console.WriteLine("Loses: {0}", score.Item2);
-            Console.WriteLine("Draws: {0}", score.Item3);
-            Console.WriteLine("==============\n\n");
-        }
-
-        private static bool Menu(Deck deck, (int, int, int) score, ref bool playGame)
-        {
-            Console.WriteLine("Would You Like To Play A Game Or View Score? type yes, no or score");
+            string cardsGraphic = ".------..------..------..------.\r\n|A.--. ||J.--. ||K.--. ||Q.--. |\r\n| (\\/) || :(): || :/\\: || (\\/) |\r\n| :\\/: || ()() || :\\/: || :\\/: |\r\n| '--'A|| '--'J|| '--'K|| '--'Q|\r\n`------'`------'`------'`------'";
+            string blackJackLogo = "______ _            _    _            _    \r\n| ___ \\ |          | |  (_)          | |   \r\n| |_/ / | __ _  ___| | ___  __ _  ___| | __\r\n| ___ \\ |/ _` |/ __| |/ / |/ _` |/ __| |/ /\r\n| |_/ / | (_| | (__|   <| | (_| | (__|   < \r\n\\____/|_|\\__,_|\\___|_|\\_\\ |\\__,_|\\___|_|\\_\\\r\n                       _/ |                \r\n                      |__/                 ";
+            Console.WriteLine(blackJackLogo);
+            Console.WriteLine(cardsGraphic);
+            Console.WriteLine("\nWould You Like To Play A Game Or View Score? Type y, n Or score");
             string command = Console.ReadLine().ToLower();
-            if (command == "no")
+            if (command == "n")
             {
                 return false;
             }
-            else if (command == "yes")
+            else if (command == "y")
             {
                 playGame = true;
             }
             else if (command == "score") 
             {
-                ShowScore(score);
+                showScore(score);
                 playGame = false;
             }
             else
@@ -128,103 +85,127 @@ namespace CA3
                 Console.WriteLine("Please type yes, no or score");
             }
 
+            Console.Clear();
             return true;
         }
 
-        //ideally should alternate between player and dealer when dealing
-        //should only print hands after the fact
-        //and then not show dealer's second card
-        private static void StartRound(Deck deck, List<Card> dealersHand, List<Card> playersHand)
+        private static void showScore((int, int, int) score)
         {
-            Console.WriteLine("----------First Draw----------");
-
-            Console.WriteLine("\n\nThe Dealer Is Dealing For Themself");
-            Console.WriteLine("======================");
-            dealersHand.Add(deck.DrawCard(true));
-            dealersHand.Add(deck.DrawCard(false));
-
-            Console.WriteLine("\nThe Dealer Is Giving You Two Cards");
-            Console.WriteLine("======================");
-            playersHand.Add(deck.DrawCard(true));
-            playersHand.Add(deck.DrawCard(true));
+            Console.Clear();
+            Logger.Log("=====Score=====", 5, true);
+            Logger.Log("Wins: " + score.Item1, 9);
+            Logger.Log("Loses: " + score.Item2, 9);
+            Logger.Log("Draws: " + score.Item3, 9);
+            Logger.Log("================\n", 5);
+            pause();
         }
 
-        private static void Twist(Deck deck, List<Card> hand)
+        private static void pause() 
         {
-            Console.WriteLine("\n\nTwisting");
-            Console.WriteLine("=========\n\n");
-            hand.Add(deck.DrawCard(true));
+            Logger.Log("Press Any Key To Continue", 1, true);
+            Console.ReadLine();
+            Console.Clear();
         }
 
-        private static bool PlayersTurn(Deck deck, List<Card> playersHand)
+        private static void startRound(Deck deck, List<Card> dealersHand, List<Card> playersHand)
         {
-            Console.WriteLine("\n\nPlayer's Turn");
-            Console.WriteLine("================\n");
+            Logger.LogWithColor("----------First Draw----------", ConsoleColor.White, ConsoleColor.DarkGray);
+
+            dealersHand.Add(deck.DrawCard());
+            playersHand.Add(deck.DrawCard());
+            dealersHand.Add(deck.DrawCard());
+            playersHand.Add(deck.DrawCard());
+
+            Logger.LogWithColor("Player's Hand", ConsoleColor.Green, spacing: 5, makeNewLn: true);
+            showHand(playersHand, false);
+
+            Logger.LogWithColor("Dealer's Hand", ConsoleColor.Magenta, spacing: 5, makeNewLn: true);
+            showHand(dealersHand, true);
+        }
+
+        //player's turn logic
+        private static bool playersTurn(Deck deck, List<Card> playersHand)
+        {
+            Logger.LogWithColor("----------Your Turn----------", ConsoleColor.White, ConsoleColor.Green, makeNewLn: true);
 
             while (true) 
             {
-                ShowHand(playersHand);
-                Console.WriteLine("Stick Or Twist?");
+                Logger.LogWithColor("Your Hand", ConsoleColor.Green, spacing: 5, makeNewLn: true);
+                showHand(playersHand, false);
+                Console.WriteLine("\nStick Or Twist? Type s Or t");
                 string stickTwist = Console.ReadLine().ToLower();
 
                 if (stickTwist == "t")
                 {
-                    Twist(deck, playersHand);
+                    twist(deck, playersHand);
+                    Console.Clear();
 
-                    if (GetHandValue(playersHand) > 21) 
+                    if (getHandValue(playersHand) > 21)
                     {
+                        showHand(playersHand, false);
                         return true;
                     }
-
+ 
                 }
-                else if (stickTwist == "s") 
+                else if (stickTwist == "s")
                 {
+                    Console.Clear();
                     return false;
                 }
                 else 
                 {
                     Console.WriteLine("Please type s or t");
                 }
+
             }
         }
 
-        private static bool DealersTurn(Deck deck, List<Card> dealersHand, List<Card> playersHand, ref bool isFirstRound) 
+        //dealer's turn logic
+        private static bool dealersTurn(Deck deck, List<Card> dealersHand, List<Card> playersHand, ref bool isFirstRound) 
         {
-            Console.WriteLine("\n\nDealer's Turn");
-            Console.WriteLine("D================\n");
+            Logger.LogWithColor("----------Dealer's Turn----------", ConsoleColor.White, ConsoleColor.Magenta, makeNewLn: true);
             if (isFirstRound)
             {
-                Console.WriteLine("\n\nRevealing dealers second card");
-                Console.WriteLine("Dealer Has {0} of {1}", dealersHand[1].Rank, dealersHand[1].Suit);
                 isFirstRound = false;
             }
 
             while (true) 
             {
-                ShowHand(dealersHand);
-                int dealerHandValue = GetHandValue(dealersHand);
-                int playerHandValue = GetHandValue(playersHand);
+                Logger.LogWithColor("Dealer's Hand", ConsoleColor.Magenta, spacing: 5, makeNewLn: true);
+                showHand(dealersHand, false);
+                int dealerHandValue = getHandValue(dealersHand);
+                int playerHandValue = getHandValue(playersHand);
                 bool dealerHasHigherValue = dealerHandValue > playerHandValue;
 
                 if (dealerHandValue > 21)
                 {
-                    Console.WriteLine("Dealer Has Busted");
+                    Console.WriteLine("\nDealer Has Busted");
                     return true;
                 }
-                else if (dealerHandValue <= 16 && !dealerHasHigherValue)
+                else if ((dealerHandValue < 16 && !dealerHasHigherValue))
                 {
-                    Twist(deck, dealersHand);
+                    twist(deck, dealersHand);
                 }
                 else
                 {
-                    Console.WriteLine("Dealer Has Stuck");
+                    Logger.LogWithColor("\nDealer Has Stuck", ConsoleColor.Magenta);
                     return false;
                 }
             }
 
         }
 
-        private static int GetHandValue(List<Card> hand)
+        //twist, draw card
+        private static void twist(Deck deck, List<Card> hand)
+        {
+            Console.WriteLine("\n========");
+            Logger.LogWithColor("Twisting", ConsoleColor.White, ConsoleColor.DarkGray);
+            Console.WriteLine("========\n");
+            hand.Add(deck.DrawCard());
+        }
+
+        //get numeric value of hand
+        private static int getHandValue(List<Card> hand)
         {
             int handValue = 0;
             int aceCount = 0;
@@ -252,66 +233,107 @@ namespace CA3
                 }
             }
 
-            Console.WriteLine("Hand value: {0}", handValue);
             if (handValue > 21)
             {
-                Console.WriteLine("================BUST================");
+                Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, makeNewLn: true);
             }
 
             return handValue;
         }
 
-        private static void ShowHand(List<Card> hand)
+        private static void showHand(List<Card> hand, bool isFirstDraw)
         {
-            Console.WriteLine("================================");
-            foreach (Card card in hand)
+            Logger.Log("-------------", 5);
+            for (int i = 0; i < hand.Count; i++)
             {
-                Console.WriteLine("{0} of {1}", card.Rank, card.Suit);
+                if (isFirstDraw && i == 1)
+                {
+                    Logger.Log("[Hidden Card]", 5);
+                }
+                else 
+                {
+                    Logger.Log(hand[i].ToString(), 5);
+                }
+
             }
-            Console.WriteLine("================================");
+            Logger.Log("-------------", 5);
         }
 
-        private static EndCondition CompareHands(List<Card> playersHand, List<Card> dealersHand) 
+
+        private static EndCondition compareHands(List<Card> playersHand, List<Card> dealersHand) 
         {
-            int playerHandValue = 0;
-            int dealerHandValue = 0;
-
-            Console.WriteLine("\n\nYour Hand");
-            Console.WriteLine("======================");
-            ShowHand(playersHand);
-            foreach (Card card in playersHand)
-            {
-                playerHandValue += card.GetCardValue(playerHandValue);
-            }
-            Console.WriteLine("Value = " + playerHandValue);
-
-            Console.WriteLine("\n\nDealer's Hand");
-            Console.WriteLine("======================");
-            ShowHand(dealersHand);
-            foreach (Card card in dealersHand)
-            {
-                dealerHandValue += card.GetCardValue(dealerHandValue);
-            }
-            Console.WriteLine("Value = " + dealerHandValue);
+            int playerHandValue = compareHandHelper(playersHand, "Your Hand", ConsoleColor.Green);
+            int dealerHandValue = compareHandHelper(dealersHand, "Dealer's Hand", ConsoleColor.Magenta);
 
             if (playerHandValue == dealerHandValue)
             {
-                Console.WriteLine("Draw!");
-                return EndCondition.Draw;
+               return declareDraw();
             }
             else if (playerHandValue > dealerHandValue)
             {
-                LogWithColor("Player Wins!", ConsoleColor.Green);
-                return EndCondition.PlayerWins;
+                return declareWin();
             }
             else 
             {
-                LogWithColor("House Wins!", ConsoleColor.Magenta);
-                return EndCondition.DealerWins;
+                return declareLoss();
             }
         }
 
-        private static void UpdateScore(EndCondition endCond, ref (int, int, int) score) 
+        private static int compareHandHelper(List<Card> hand, string msg, ConsoleColor color) 
+        {
+            Logger.LogWithColor("=========", color, spacing: 5, makeNewLn: true);
+            Logger.LogWithColor($"{msg}", ConsoleColor.White, color, spacing: 5);
+            Logger.LogWithColor("=========", color, spacing: 5);
+            showHand(hand, false);
+            return getHandValue(hand);
+        }
+
+        private static EndCondition determineWinner(bool playerBusts, bool dealerBusts, List<Card> dealersHand, List<Card> playersHand)
+        {
+            if (!playerBusts && !dealerBusts)
+            {
+                return compareHands(playersHand, dealersHand);
+            }
+            else if (playerBusts)
+            {
+                return declareLoss();
+            }
+            else if (dealerBusts)
+            {
+                return declareWin();
+            }
+            else if (dealerBusts && playerBusts) 
+            {
+                return declareDraw();
+            }
+            return declareNoOutcome();
+        }
+
+        private static EndCondition declareWin() 
+        {
+            Logger.LogWithColor("Player Wins!", ConsoleColor.White, ConsoleColor.Green, 5, true);
+            return EndCondition.PlayerWins;
+        }
+
+        private static EndCondition declareLoss()
+        {
+            Logger.LogWithColor("House Wins!", ConsoleColor.White, ConsoleColor.Magenta, 5, true);
+            return EndCondition.DealerWins;
+        }
+
+        private static EndCondition declareDraw()
+        {
+            Logger.LogWithColor("Draw!", ConsoleColor.White, ConsoleColor.DarkGray, 5, true);
+            return EndCondition.Draw;
+        }
+
+        private static EndCondition declareNoOutcome()
+        {
+            Logger.LogWithColor("Could Not Determine Outcome".PadLeft(10), ConsoleColor.White, ConsoleColor.Red, 5, true);
+            return EndCondition.None;
+        }
+
+        private static void updateScore(EndCondition endCond, ref (int, int, int) score) 
         {
             if (endCond == EndCondition.Draw)
             {
@@ -326,6 +348,16 @@ namespace CA3
                 score.Item2++;
             }
         }
+
+        private static void resetGame(Deck deck, List<Card> dealersHand, List<Card> playersHand, ref EndCondition endCond, ref bool playGame)
+        {
+            playGame = false;
+            endCond = EndCondition.None;
+            dealersHand.Clear();
+            playersHand.Clear();
+            deck.ResetDeck();
+            deck.ShuffleDeck();
+        }
     }
 }
 
@@ -338,12 +370,15 @@ namespace CA3
 //if dealer has stuck, hand values are compared
 //if player chooses to not draw card, and dealer choose to not draw card, and neither busted, hand values are compared
 
-//add tostring method for deck and card, card shows suit, rank and value. Deck prints the print of card in a loop
+//might be best to have a class for player's score and money
 
 //settings:
 //beginner vs. expert mode where beginner prints card values and shows hints if you should stick or twist
 //let user choose color, regardless change color of different logged elements, maybe color match suits too
 //can do an override of writeline that takes color as an argument to fascilitate this
+//setting for player and dealer color
+//wildcard mode where dealer can keep playing past 16 hand value if player has higher hand value (playerHandValue > dealerHandValue && dealerHandValue < 21)
+
 
 //have option to view score, games played, games won, games lost, win-lose ratio
 //allow user to view revealed cards and hand after every draw or simpl write it every time.

@@ -36,18 +36,22 @@ namespace CA3
             }
         }
 
-        public Card DrawCard(bool revealCard) 
+        public override string ToString()
+        {
+            string cards = "";
+
+            foreach (Card card in CardDeck) 
+            {
+                cards += card.ToString() + "\n";
+            }
+
+            return cards;
+        }
+
+        public Card DrawCard() 
         {
             Card drawnCard = CardDeck[0];
             CardDeck.RemoveAt(0);
-            if (revealCard)
-            {
-                Console.WriteLine("{0} of {1}", drawnCard.Rank, drawnCard.Suit);
-            }
-            else 
-            {
-                Console.WriteLine("[Card Is Hidden]");
-            }
             return drawnCard;
         }
 

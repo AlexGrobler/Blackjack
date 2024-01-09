@@ -46,6 +46,27 @@ namespace CA3
 
         public Card() { }
 
+        public override string ToString()
+        {
+            return $"{Rank} of {Suit}";
+        }
+
+/*        private static ConsoleColor getSuitColor(CardSuit suit) 
+        {
+            switch (suit) 
+            {
+                case CardSuit.Diamonds:
+                    return ConsoleColor.Red;
+                case CardSuit.Hearts:
+                    return ConsoleColor.Red;
+                case CardSuit.Clubs:
+                    return ConsoleColor.Gray;
+                case CardSuit.Spades:
+                    return ConsoleColor.Gray;
+                default: return ConsoleColor.White;
+            }
+        }
+*/
         public int GetCardValue(int handValue)
         {
             int cardValue = (int)Rank;
