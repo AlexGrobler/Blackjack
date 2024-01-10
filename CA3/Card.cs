@@ -35,8 +35,21 @@ namespace CA3
             Ace = 0
         }
 
-        public CardSuit Suit { get; set; }
-        public CardRank Rank { get; set; }
+        public CardSuit Suit { get; private set; }
+        public CardRank Rank { get; private set; }
+
+        public int CardValue 
+        {
+            get
+            {
+                int cardValue = (int)Rank;
+                if (cardValue > 10)
+                {
+                    return 10;
+                }
+                return cardValue;
+            }
+        }
 
         public Card(CardSuit suit, CardRank rank) 
         {
@@ -51,9 +64,9 @@ namespace CA3
             return $"{Rank} of {Suit}";
         }
 
-/*        private static ConsoleColor getSuitColor(CardSuit suit) 
+        private static ConsoleColor getSuitColor(CardSuit suit)
         {
-            switch (suit) 
+            switch (suit)
             {
                 case CardSuit.Diamonds:
                     return ConsoleColor.Red;
@@ -66,25 +79,6 @@ namespace CA3
                 default: return ConsoleColor.White;
             }
         }
-*/
-        public int GetCardValue(int handValue)
-        {
-            int cardValue = (int)Rank;
-            if (cardValue > 10) 
-            {
-                return 10;
-            }
-            if (cardValue == 0) 
-            {
-                if (handValue + 11 > 21) 
-                {
-                    return 1;
-                }
-                return 11;
-            }
-            return cardValue;
-        }
-
 
     }
 }
