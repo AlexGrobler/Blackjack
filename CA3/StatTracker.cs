@@ -81,6 +81,8 @@ namespace CA3
         {
             CurrentEndCondition = EndCondition.None;
             CurrentBet = 0;
+            GameOver = false;
+            GameWon = false;
             if (doFullReset)
             {
                 PlayerFunds = StartingFunds;

@@ -118,8 +118,8 @@ namespace CA3
         private static bool menu(Deck deck, StatTracker stats, ref bool keepAppRunning)
         {
             showLogo();
-            Logger.Log("Welcome To Blackjack!", 20, true);
-            Logger.Log("-------------------------", 18);
+            Logger.LogWithColor("Welcome To Blackjack!", ConsoleColor.White, spacing: 20, newLn: true);
+            Logger.LogWithColor("-------------------------", ConsoleColor.White, spacing: 18);
             Logger.Log("Would You Like To Play A Game, View Stats, Or View The Tutorial?", newLn: true);
             Logger.Log("Type y To Play, n To Quit, s For Stats, Or t For Tutorial");
             string command = Console.ReadLine().ToLower();
@@ -167,17 +167,17 @@ namespace CA3
             Logger.Log("You bet money at the start of a round");
             Logger.Log("If you run out of funds, you lose!");
             Logger.Log("If the dealer runs out of funds, you win!");
+            Logger.Log("Your and the dealer's remaining funds are shown in the stats screen or at the start of rounds");
             pause();
-            Logger.Log("Your and the dealer's remaining funds are shown in the stats screen at the start of rounds");
-            Logger.Log("Your goal is to get a hand with a value higher than the dealers");
+            Logger.Log("Your goal is to get a hand with a value higher than the dealer's");
             Logger.Log("A hand with a value over 21 means you bust, you lose that round!");
             Logger.Log("The card's suit does not matter!");
             pause();
-            Logger.Log("Card Values", 20, true);
-            Logger.Log("-------------------------", 15);
-            Logger.Log("All numbered cards are worth that amount: ", 5, true);
+            Logger.LogWithColor("Card Values", ConsoleColor.White, spacing: 20, newLn: true);
+            Logger.LogWithColor("---------------------", ConsoleColor.White, spacing: 15);
+            Logger.Log("All numbered cards are worth the same amount: ", 5, true);
             logCardInfoGraphic("5", "5");
-            Logger.Log("Jack, Queen and King are worth 10: ", 5, true);
+            Logger.Log("Jack, Queen and King are all worth 10: ", 5, true);
             logCardInfoGraphic("K", "10");
             Logger.Log("An Ace can be worth 1 or 11, whichever helps the player the most: ", 5, true);
             logCardInfoGraphic("A", "1/11");
@@ -194,8 +194,7 @@ namespace CA3
             $" | '--'{rank}|\r\n" +
             " `------'";
 
-            Console.WriteLine(card);
-            Console.Write("");
+            Logger.LogWithColor(card, ConsoleColor.White);
         }
 
         //pause app and wait for user input to continue
