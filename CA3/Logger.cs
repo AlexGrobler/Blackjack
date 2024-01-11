@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CA3
@@ -26,5 +27,20 @@ namespace CA3
             str = newLn ? "\n" + str : str;
             Console.WriteLine(str);
         }
+
+        //pseudo-animate game over graphic if the player loses or wins the game (dealer or player runs out of money)
+        //uses Thread.Sleep() method to pause code execution to create blinking effect
+        public static void DoTextAnimation(string graphic, ConsoleColor color, ConsoleColor backgroundColor = ConsoleColor.Black)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                Logger.LogWithColor(graphic, color, backgroundColor);
+                Thread.Sleep(700);
+
+                Console.Clear();
+                Thread.Sleep(250);
+            }
+        }
+
     }
 }

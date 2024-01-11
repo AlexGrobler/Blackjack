@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Card.cs" />
-    <Compile Include="PlayerStatTracker.cs" />
+    <Compile Include="StatTracker.cs" />
     <Compile Include="Deck.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />

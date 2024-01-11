@@ -4,34 +4,42 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static CA3.PlayerStatTracker;
+using static CA3.StatTracker;
 
 namespace CA3
 {
     internal class Program
     {
         //Used ASCII generator to create graphics
-        const string BLACKJACK_LOGO = "" +
-            "     ______ _            _    _            _    \r\n" +
-            "     | ___ \\ |          | |  (_)          | |   \r\n" +
-            "     | |_/ / | __ _  ___| | ___  __ _  ___| | __\r\n" +
-            "     | ___ \\ |/ _` |/ __| |/ / |/ _` |/ __| |/ /\r\n" +
-            "     | |_/ / | (_| | (__|   <| | (_| | (__|   < \r\n" +
-            "     \\____/|_|\\__,_|\\___|_|\\_\\ |\\__,_|\\___|_|\\_\\\r\n" +
-            "                            _/ |                \r\n" +
-            "                           |__/                 ";
+        const string BLACKJACK_LOGO = "\n" +
+            "        ______ _            _    _            _    \r\n" +
+            "        | ___ \\ |          | |  (_)          | |   \r\n" +
+            "        | |_/ / | __ _  ___| | ___  __ _  ___| | __\r\n" +
+            "        | ___ \\ |/ _` |/ __| |/ / |/ _` |/ __| |/ /\r\n" +
+            "        | |_/ / | (_| | (__|   <| | (_| | (__|   < \r\n" +
+            "        \\____/|_|\\__,_|\\___|_|\\_\\ |\\__,_|\\___|_|\\_\\\r\n" +
+            "                               _/ |                \r\n" +
+            "                              |__/                 ";
         const string CARDS_GRAPHIC = "" +
-            "          .------..------..------..------.\r\n" +
-            "          |A.--. ||J.--. ||Q.--. ||K.--. |\r\n" +
-            "          | :/\\: || :(): || (\\/) || :/\\: |\r\n" +
-            "          | (__) || ()() || :\\/: || :\\/: |\r\n" +
-            "          | '--'A|| '--'J|| '--'Q|| '--'K|\r\n" +
-            "          `------'`------'`------'`------'";
-        const string GAME_OVER = "" +
-            "      ___   ___  __ __  ___       ___  _ _  ___  ___ \r\n" +
-            "     /  _> | . ||  \\  \\| __>     | . || | || __>| . \\\r\n" +
-            "     | <_/\\|   ||     || _>      | | || ' || _> |   /\r\n" +
-            "     `____/|_|_||_|_|_||___>     `___'|__/ |___>|_\\_\\\r\n                                                ";
+            "             .------..------..------..------.\r\n" +
+            "             |A.--. ||J.--. ||Q.--. ||K.--. |\r\n" +
+            "             | :/\\: || :(): || (\\/) || :/\\: |\r\n" +
+            "             | (__) || ()() || :\\/: || :\\/: |\r\n" +
+            "             | '--'A|| '--'J|| '--'Q|| '--'K|\r\n" +
+            "             `------'`------'`------'`------'";
+        const string GAME_OVER = "\n\n\n\n\n\n" +
+            "                                   ___   ___  __ __  ___       ___  _ _  ___  ___ \r\n" +
+            "                                  /  _> | . ||  \\  \\| __>     | . || | || __>| . \\\r\n" +
+            "                                  | <_/\\|   ||     || _>      | | || ' || _> |   /\r\n" +
+            "                                  `____/|_|_||_|_|_||___>     `___'|__/ |___>|_\\_\\\r\n";
+
+        const string YOU_WIN = "\n\n\n\n\n\n" +
+            "                                 __   __            _    _ _         _ \r\n" +
+            "                                 \\ \\ / /           | |  | (_)       | |\r\n" +
+            "                                  \\ V /___  _   _  | |  | |_ _ __   | |\r\n" +
+            "                                   \\ // _ \\| | | | | |/\\| | | '_ \\  | |\r\n" +
+            "                                   | | (_) | |_| | \\  /\\  / | | | | |_|\r\n" +
+            "                                   \\_/\\___/ \\__,_|  \\/  \\/|_|_| |_| (_)\r\n";
 
         static void Main(string[] args)
         {
@@ -45,7 +53,7 @@ namespace CA3
 
 
             Deck deck = new Deck();
-            PlayerStatTracker playerStats = new PlayerStatTracker(0, 0, 0, 1000, 0, EndCondition.None, false);    
+            StatTracker stats = new StatTracker(0, 0, 0, 1000);    
 
             //used to hold cards as they are dealt
             List<Card> playersHand = new List<Card>();
@@ -55,7 +63,7 @@ namespace CA3
             {
                 while (stayInMenu)
                 {
-                    stayInMenu = menu(deck, playerStats, ref keepAppRunning);
+                    stayInMenu = menu(deck, stats, ref keepAppRunning);
                 }
 
                 if (keepAppRunning)
@@ -71,35 +79,52 @@ namespace CA3
 
                     showHandWithColor(playersHand, "Your Hand", ConsoleColor.Green);
                     showHandWithColor(dealersHand, "Dealer's Hand", ConsoleColor.Magenta);
-                    playerStats.DetermineWinner(playerBusts, dealerBusts, getHandValue(playersHand), getHandValue(dealersHand));
+                    stats.DetermineWinner(playerBusts, dealerBusts, getHandValue(playersHand), getHandValue(dealersHand));
+                    pause();
+                    stats.ShowStats();
                     pause();
 
-                    if (playerStats.GameOver) 
+                    if (stats.GameOver || stats.GameWon)
                     {
-                        playerStats.GameOverScreen(GAME_OVER);
-                        break;
+                        if (isGameEnded(stats))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            resetGame(deck, dealersHand, playersHand, stats, true, ref stayInMenu);
+                        }
                     }
-                    resetGame(deck, dealersHand, playersHand, playerStats, ref stayInMenu);
+                    else 
+                    {
+                        resetGame(deck, dealersHand, playersHand, stats, false, ref stayInMenu);
+                    }
                 }
             }
 
-            playerStats.ShowStats();
-            pause();
-
-            Logger.LogWithColor("\n\n===========GAME CLOSED===========\n\n", ConsoleColor.Green);
+            Logger.LogWithColor("\n\n===========GAME ENDED===========\n\n", ConsoleColor.Green);
             Logger.Log("Thanks For Playing!", 5);
             Console.ReadLine();
         }
 
-        //main menu for app that will be returned to until the app is closed
-        private static bool menu(Deck deck, PlayerStatTracker playerStats, ref bool keepAppRunning)
+        private static void showLogo() 
         {
             Logger.LogWithColor(BLACKJACK_LOGO, ConsoleColor.White);
             Logger.LogWithColor(CARDS_GRAPHIC, ConsoleColor.White);
-            Console.WriteLine("\nWould You Like To Play A Game Or View Stats? Type y, n Or s");
+        }
+
+        //main menu for app that will be returned to until the app is closed
+        //allows player to play, quit, view stats or view tutorial
+        private static bool menu(Deck deck, StatTracker stats, ref bool keepAppRunning)
+        {
+            showLogo();
+            Logger.Log("Welcome To Blackjack!", 20, true);
+            Logger.Log("-------------------------", 18);
+            Logger.Log("Would You Like To Play A Game, View Stats, Or View The Tutorial?", newLn: true);
+            Logger.Log("Type y To Play, n To Quit, s For Stats, Or t For Tutorial");
             string command = Console.ReadLine().ToLower();
 
-            while (command != "n" || command != "y" || command != "s")
+            while (command != "n" || command != "y" || command != "s" || command != "t")
             {
                 if (command == "n")
                 {
@@ -110,23 +135,67 @@ namespace CA3
                 else if (command == "y")
                 {
                     Console.Clear();
-                    playerStats.GetPlayerBet();
+                    stats.GetPlayerBet();
                     return false;
                 }
                 else if (command == "s")
                 {
-                    playerStats.ShowStats();
+                    stats.ShowStats();
+                    pause();
+                    return true;
+                }
+                else if (command == "t") 
+                {
+                    tutorial();
                     pause();
                     return true;
                 }
                 else
                 {
-                    Console.WriteLine("Please Type y, n Or s");
+                    Console.WriteLine("Please Type y, n, t Or s");
                     command = Console.ReadLine().ToLower();
                 }
             }
             
             return true;
+        }
+
+
+        private static void tutorial() 
+        {
+            Console.Clear();
+            Logger.Log("You bet money at the start of a round");
+            Logger.Log("If you run out of funds, you lose!");
+            Logger.Log("If the dealer runs out of funds, you win!");
+            pause();
+            Logger.Log("Your and the dealer's remaining funds are shown in the stats screen at the start of rounds");
+            Logger.Log("Your goal is to get a hand with a value higher than the dealers");
+            Logger.Log("A hand with a value over 21 means you bust, you lose that round!");
+            Logger.Log("The card's suit does not matter!");
+            pause();
+            Logger.Log("Card Values", 20, true);
+            Logger.Log("-------------------------", 15);
+            Logger.Log("All numbered cards are worth that amount: ", 5, true);
+            logCardInfoGraphic("5", "5");
+            Logger.Log("Jack, Queen and King are worth 10: ", 5, true);
+            logCardInfoGraphic("K", "10");
+            Logger.Log("An Ace can be worth 1 or 11, whichever helps the player the most: ", 5, true);
+            logCardInfoGraphic("A", "1/11");
+        }
+
+        //create card graphic with specified rank and value for the tutorial
+        private static void logCardInfoGraphic(string rank, string value)
+        {
+            string card = "" +
+            " .------.\r\n" +
+            $" |{rank}.--. |\r\n" +
+            $" | :/\\: |      = {value}\r\n" +
+            " | (__) |\r\n" +
+            $" | '--'{rank}|\r\n" +
+            " `------'";
+
+            Console.WriteLine(card);
+            Console.Write("");
         }
 
         //pause app and wait for user input to continue
@@ -135,6 +204,39 @@ namespace CA3
             Logger.Log("Press Any Key To Continue", 1, true);
             Console.ReadLine();
             Console.Clear();
+        }
+
+        //pause app and wait for user input to continue
+        private static bool isGameEnded(StatTracker stats)
+        {
+            if (stats.GameOver)
+            {
+                Logger.DoTextAnimation(GAME_OVER, ConsoleColor.Red);
+            }
+            if (stats.GameWon)
+            {
+                Logger.DoTextAnimation(YOU_WIN, ConsoleColor.Green);
+            }
+
+            Logger.Log("Would You Like To Try Again? Type y Or n", 1, true);
+            while (true)
+            {
+                string answer = Console.ReadLine();
+                if (answer == "y")
+                {
+                    Console.Clear();
+                    return false;
+                }
+                else if (answer == "n")
+                {
+                    Console.Clear();
+                    return true;
+                }
+                else
+                {
+                    Logger.Log("Please Type y Or n", 1, true);
+                }
+            }
         }
 
         //suffle deck and deal first cards, hide dealer's 2nd card
@@ -168,29 +270,32 @@ namespace CA3
                 Console.WriteLine("\nStick Or Twist? Type s Or t");
                 string stickTwist = Console.ReadLine().ToLower();
 
-                if (stickTwist == "t")
+                while (stickTwist != "t" || stickTwist !="s") 
                 {
-                    twist(deck, playersHand);
-                    Console.Clear();
-
-                    if (getHandValue(playersHand) > 21)
+                    if (stickTwist == "t")
                     {
-                        Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, newLn: true);
-                        return true;
-                    }
- 
-                }
-                else if (stickTwist == "s")
-                {
-                    Console.Clear();
-                    return false;
-                }
-                else
-                {
-                    Console.Clear();
-                    Console.WriteLine("Please type s Or t");
-                }
+                        twist(deck, playersHand);
+                        if (getHandValue(playersHand) > 21)
+                        {
+                            Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, newLn: true);
+                            pause();
+                            return true;
+                        }
+                        Console.Clear();
+                        break;
 
+                    }
+                    else if (stickTwist == "s")
+                    {
+                        Console.Clear();
+                        return false;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Please type s Or t");
+                        stickTwist = Console.ReadLine().ToLower();
+                    }
+                }
             }
         }
 
@@ -213,7 +318,7 @@ namespace CA3
 
                 if (dealerHandValue > 21)
                 {
-                    Logger.LogWithColor("Dealer Has Busted!", ConsoleColor.White, ConsoleColor.Magenta, 5, true);
+                    Logger.LogWithColor("Dealer Has Gone Bust!", ConsoleColor.White, ConsoleColor.Green, 5, true);
                     return true;
                 }
                 else if ((dealerHandValue < 16 && !dealerHasHigherValue))
@@ -267,13 +372,12 @@ namespace CA3
         }
 
         //reset deck, hands and other relevant values
-        private static void resetGame(Deck deck, List<Card> dealersHand, List<Card> playersHand, PlayerStatTracker playerStats, ref bool isInMenu)
+        private static void resetGame(Deck deck, List<Card> dealersHand, List<Card> playersHand, StatTracker stats, bool doFullReset, ref bool isInMenu)
         {
             isInMenu = true;
-            playerStats.CurrentEndCondition = EndCondition.None;
-            playerStats.CurrentBet = 0;
             dealersHand.Clear();
             playersHand.Clear();
+            stats.ResetStats(doFullReset);
             deck.InitializeDeck();
         }
 

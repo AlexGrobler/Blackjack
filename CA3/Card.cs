@@ -69,7 +69,6 @@ namespace CA3
             return $"{Rank} of {Suit}";
         }
 
-
         //relate each suit to a color for logging
         private static ConsoleColor getSuitColor(CardSuit suit)
         {
