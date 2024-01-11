@@ -7,13 +7,14 @@ using static CA3.Card;
 
 namespace CA3
 {
+    //Deck class to hold all the cards that can be used during a game
     class Deck
     {
         public List<Card> CardDeck = new List<Card>();
 
         public Deck() 
         {
-            ResetDeck();
+            InitializeDeck();
         }
 
         public Deck(List<Card> customDeck)
@@ -21,7 +22,7 @@ namespace CA3
             CardDeck = customDeck;
         }
 
-        //Fisher-Yates shuffle
+        //Fisher-Yates shuffle found online and adapted
         public void ShuffleDeck() 
         {
             Random rnd = new Random();
@@ -36,6 +37,7 @@ namespace CA3
             }
         }
 
+        //easy way to log all the ranks and suits of all cards in the deck
         public override string ToString()
         {
             string cards = "";
@@ -48,6 +50,7 @@ namespace CA3
             return cards;
         }
 
+        //take first card obj from list and pass to local variable. Remove card obj from list, then return the local variable's reference to it
         public Card DrawCard() 
         {
             Card drawnCard = CardDeck[0];
@@ -55,8 +58,9 @@ namespace CA3
             return drawnCard;
         }
 
-
-        public void ResetDeck() 
+        //For initialzing and reseting the deck. Use card class's enums to iterate all the possible the suits, then all the poissible ranks
+        //ensures 52 cards are added without manually creating each card
+        public void InitializeDeck() 
         {
             CardDeck.Clear();
             foreach (CardSuit suit in Enum.GetValues(typeof(CardSuit)))

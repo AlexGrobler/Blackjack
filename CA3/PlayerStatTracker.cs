@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CA3
 {
+    //class for keeping track of and calculating player stats, determining if player won
     public class PlayerStatTracker
     {
         public enum EndCondition
@@ -20,14 +22,17 @@ namespace CA3
         public int Losses { get; private set; }
         public int Draws { get; private set; }
 
-        public decimal PlayerFunds { get; private set; }
-        public decimal CurrentBet { get; set; }
+        public int PlayerFunds { get; private set; }
+        public int CurrentBet { get; set; }
 
         public EndCondition CurrentEndCondition { get; set; }
 
-        public bool GameOver { get; private set; }  
+        //game over is declared if player runs out of funds, which shows game over screen and closes app
+        public bool GameOver { get; private set; }
 
-        public PlayerStatTracker(int wins, int loses, int draws, decimal funds, decimal bet, EndCondition endCond, bool gameOver) 
+        const int MINIMUM_BET = 1;
+
+        public PlayerStatTracker(int wins, int loses, int draws, int funds, int bet, EndCondition endCond, bool gameOver) 
         {
             Wins = wins;
             Losses = loses;
@@ -47,6 +52,35 @@ namespace CA3
 
         public PlayerStatTracker() { }
 
+        //logs player's stats
+        public void ShowStats()
+        {
+            Console.Clear();
+            Logger.LogWithColor("=====Stats=====", ConsoleColor.DarkGreen, spacing: 5, newLn: true);
+            Logger.Log($"Funds: {PlayerFunds:C}", 9);
+            Logger.Log("Wins: " + Wins, 9);
+            Logger.Log("Loses: " + Losses, 9);
+            Logger.Log("Draws: " + Draws, 9);
+            Logger.LogWithColor("================\n", ConsoleColor.DarkGreen, spacing: 5);
+        }
+
+        //pseudo-animate game over graphic if the player loses the game (runs out of money)
+        public void GameOverScreen(string gameOver)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                Logger.LogWithColor(gameOver, ConsoleColor.Red);
+                Thread.Sleep(750);
+
+                Console.Clear();
+                Thread.Sleep(250);
+            }
+
+            ShowStats();
+        }
+
+        //Determines the end state of the round based on if player/dealer busted and if neither then hand value
+        //then update stats
         public void DetermineWinner(bool playerBusts, bool dealerBusts, int playerHandValue, int dealerHandValue)
         {
             if (!playerBusts && !dealerBusts)
@@ -73,23 +107,7 @@ namespace CA3
             updateStats();
         }
 
-        private void updateStats()
-        {
-            if (CurrentEndCondition == EndCondition.Draw)
-            {
-                Draws++;
-            }
-            if (CurrentEndCondition == EndCondition.PlayerWins)
-            {
-               Wins++;
-            }
-            if (CurrentEndCondition == EndCondition.DealerWins)
-            {
-                Losses++;
-            }            
-        }
-
-
+        //compare value of dealer and player hands to determine who won
         private EndCondition compareHandValues(int playerHandValue, int dealerHandValue)
         {
             if (playerHandValue == dealerHandValue)
@@ -106,64 +124,93 @@ namespace CA3
             }
         }
 
+
+        //update tally of wins, loses and draws
+        private void updateStats()
+        {
+            if (CurrentEndCondition == EndCondition.Draw)
+            {
+                Draws++;
+            }
+            if (CurrentEndCondition == EndCondition.PlayerWins)
+            {
+               Wins++;
+            }
+            if (CurrentEndCondition == EndCondition.DealerWins)
+            {
+                Losses++;
+            }            
+        }
+
+        //get player's bet, make sure it's a valid amount
         public void GetPlayerBet()
         {
+            
             CurrentBet = 0;
-            Logger.Log($"Current Balance: {PlayerFunds:C}", makeNewLn: true);
-            Logger.Log("How Much Would You Like To Bet?", makeNewLn: true);
+            Logger.Log($"Current Balance: {PlayerFunds:C}", newLn: true);
+            Logger.Log("How Much Would You Like To Bet? Cents Aren't Accepted", newLn: true);
             while (true)
             {
-                decimal bet;
-                bool success = decimal.TryParse(Console.ReadLine(), out bet);
+                int bet;
+                bool success = int.TryParse(Console.ReadLine(), out bet);
 
-                if (success && bet <= PlayerFunds)
+                if (success && bet <= PlayerFunds && bet >= MINIMUM_BET)
                 {
                     CurrentBet = bet;
                     Console.Clear();
                     Logger.Log($"Current Bet: {CurrentBet:C}", 5);
                     return;
                 }
-                if (bet > PlayerFunds) 
+                if (success && bet > PlayerFunds) 
                 {
                     Logger.Log("Insufficient Funds");
+                }
+                if (success && bet < MINIMUM_BET)
+                {
+                    Logger.Log($"Bet Must Be At Least Minimum {MINIMUM_BET:C}");
                 }
                 Console.WriteLine("Please Enter Valid Value For Bet");
             }
         }
 
-        private void updateFunds(decimal difference) 
+        //update player's current funds, check if they ran out and set GameOver to true is so
+        private void updateFunds(int difference) 
         {
             PlayerFunds = Math.Max(PlayerFunds + difference, 0);
             if (PlayerFunds <= 0) 
             {
-                Logger.LogWithColor("You Ran Out Of Funds!", ConsoleColor.Red);
+                Logger.LogWithColor("You Ran Out Of Funds!", ConsoleColor.Red, spacing: 2);
                 GameOver = true;
             }
         }
 
+        //log that player won, update funds
         private EndCondition declareWin()
         {
-            Logger.LogWithColor("Player Wins!", ConsoleColor.White, ConsoleColor.Green, 5, true);
-                            Logger.LogWithColor($"Rewarding Bet Of {CurrentBet:C}", ConsoleColor.Green);
-                updateFunds(CurrentBet);
+            Logger.LogWithColor("You Win!", ConsoleColor.White, ConsoleColor.Green, 5, true);
+            Logger.LogWithColor($"Rewarding Bet Of {CurrentBet:C}", ConsoleColor.Green, spacing: 2, newLn: true);
+            updateFunds(CurrentBet);
             return EndCondition.PlayerWins;
         }
 
+        //log that player lost, update funds
         private EndCondition declareLoss()
         {
             Logger.LogWithColor("House Wins!", ConsoleColor.White, ConsoleColor.Magenta, 5, true);
-            Logger.LogWithColor($"Deducting Bet Of {CurrentBet:C}", ConsoleColor.Red);
+            Logger.LogWithColor($"Deducting Bet Of {CurrentBet:C}", ConsoleColor.Red, spacing: 2, newLn: true);
             updateFunds(-CurrentBet);
             return EndCondition.DealerWins;
         }
 
+        //log that player drew, update funds
         private EndCondition declareDraw()
         {
             Logger.LogWithColor("Draw!", ConsoleColor.White, ConsoleColor.DarkGray, 5, true);
-            Logger.Log($"Returning Bet Of {CurrentBet:C}");
+            Logger.Log($"Returning Bet Of {CurrentBet:C}", 2, true);
             return EndCondition.Draw;
         }
 
+        //log that no valid outcome was found for debugging purposes
         private EndCondition declareNoOutcome()
         {
             Logger.LogWithColor("Could Not Determine Outcome".PadLeft(10), ConsoleColor.White, ConsoleColor.Red, 5, true);

@@ -11,9 +11,27 @@ namespace CA3
     internal class Program
     {
         //Used ASCII generator to create graphics
-        const string BLACKJACK_LOGO = "______ _            _    _            _    \r\n| ___ \\ |          | |  (_)          | |   \r\n| |_/ / | __ _  ___| | ___  __ _  ___| | __\r\n| ___ \\ |/ _` |/ __| |/ / |/ _` |/ __| |/ /\r\n| |_/ / | (_| | (__|   <| | (_| | (__|   < \r\n\\____/|_|\\__,_|\\___|_|\\_\\ |\\__,_|\\___|_|\\_\\\r\n                       _/ |                \r\n                      |__/                 ";
-        const string CARDS_GRAPHIC = ".------..------..------..------.\r\n|A.--. ||J.--. ||Q.--. ||K.--. |\r\n| :/\\: || :(): || (\\/) || :/\\: |\r\n| (__) || ()() || :\\/: || :\\/: |\r\n| '--'A|| '--'J|| '--'Q|| '--'K|\r\n`------'`------'`------'`------'";
-        const string GAME_OVER = " ___   ___  __ __  ___       ___  _ _  ___  ___ \r\n/  _> | . ||  \\  \\| __>     | . || | || __>| . \\\r\n| <_/\\|   ||     || _>      | | || ' || _> |   /\r\n`____/|_|_||_|_|_||___>     `___'|__/ |___>|_\\_\\\r\n                                                ";
+        const string BLACKJACK_LOGO = "" +
+            "     ______ _            _    _            _    \r\n" +
+            "     | ___ \\ |          | |  (_)          | |   \r\n" +
+            "     | |_/ / | __ _  ___| | ___  __ _  ___| | __\r\n" +
+            "     | ___ \\ |/ _` |/ __| |/ / |/ _` |/ __| |/ /\r\n" +
+            "     | |_/ / | (_| | (__|   <| | (_| | (__|   < \r\n" +
+            "     \\____/|_|\\__,_|\\___|_|\\_\\ |\\__,_|\\___|_|\\_\\\r\n" +
+            "                            _/ |                \r\n" +
+            "                           |__/                 ";
+        const string CARDS_GRAPHIC = "" +
+            "          .------..------..------..------.\r\n" +
+            "          |A.--. ||J.--. ||Q.--. ||K.--. |\r\n" +
+            "          | :/\\: || :(): || (\\/) || :/\\: |\r\n" +
+            "          | (__) || ()() || :\\/: || :\\/: |\r\n" +
+            "          | '--'A|| '--'J|| '--'Q|| '--'K|\r\n" +
+            "          `------'`------'`------'`------'";
+        const string GAME_OVER = "" +
+            "      ___   ___  __ __  ___       ___  _ _  ___  ___ \r\n" +
+            "     /  _> | . ||  \\  \\| __>     | . || | || __>| . \\\r\n" +
+            "     | <_/\\|   ||     || _>      | | || ' || _> |   /\r\n" +
+            "     `____/|_|_||_|_|_||___>     `___'|__/ |___>|_\\_\\\r\n                                                ";
 
         static void Main(string[] args)
         {
@@ -25,10 +43,11 @@ namespace CA3
             bool playerBusts = false;
             bool keepAppRunning = true;
 
+
             Deck deck = new Deck();
-            deck.ShuffleDeck();
             PlayerStatTracker playerStats = new PlayerStatTracker(0, 0, 0, 1000, 0, EndCondition.None, false);    
 
+            //used to hold cards as they are dealt
             List<Card> playersHand = new List<Card>();
             List<Card> dealersHand = new List<Card>();
 
@@ -36,7 +55,7 @@ namespace CA3
             {
                 while (stayInMenu)
                 {
-                    keepAppRunning = menu(deck, playerStats, ref stayInMenu);
+                    stayInMenu = menu(deck, playerStats, ref keepAppRunning);
                 }
 
                 if (keepAppRunning)
@@ -54,28 +73,30 @@ namespace CA3
                     showHandWithColor(dealersHand, "Dealer's Hand", ConsoleColor.Magenta);
                     playerStats.DetermineWinner(playerBusts, dealerBusts, getHandValue(playersHand), getHandValue(dealersHand));
                     pause();
+
                     if (playerStats.GameOver) 
                     {
-                        gameOverScreen(playerStats);
+                        playerStats.GameOverScreen(GAME_OVER);
                         break;
                     }
-                    pause();
                     resetGame(deck, dealersHand, playersHand, playerStats, ref stayInMenu);
                 }
             }
+
+            playerStats.ShowStats();
+            pause();
 
             Logger.LogWithColor("\n\n===========GAME CLOSED===========\n\n", ConsoleColor.Green);
             Logger.Log("Thanks For Playing!", 5);
             Console.ReadLine();
         }
 
-
-    
-        private static bool menu(Deck deck, PlayerStatTracker playerStats, ref bool stayInMenu)
+        //main menu for app that will be returned to until the app is closed
+        private static bool menu(Deck deck, PlayerStatTracker playerStats, ref bool keepAppRunning)
         {
-            Console.WriteLine(BLACKJACK_LOGO);
-            Console.WriteLine(CARDS_GRAPHIC);
-            Console.WriteLine("\nWould You Like To Play A Game Or View Score? Type y, n Or s");
+            Logger.LogWithColor(BLACKJACK_LOGO, ConsoleColor.White);
+            Logger.LogWithColor(CARDS_GRAPHIC, ConsoleColor.White);
+            Console.WriteLine("\nWould You Like To Play A Game Or View Stats? Type y, n Or s");
             string command = Console.ReadLine().ToLower();
 
             while (command != "n" || command != "y" || command != "s")
@@ -83,20 +104,19 @@ namespace CA3
                 if (command == "n")
                 {
                     Console.Clear();
-                    stayInMenu = false;
+                    keepAppRunning = false;
                     return false;
                 }
                 else if (command == "y")
                 {
                     Console.Clear();
-                    stayInMenu = false;
                     playerStats.GetPlayerBet();
-                    return true;
+                    return false;
                 }
                 else if (command == "s")
                 {
-                    showScore(playerStats);
-                    stayInMenu = true;
+                    playerStats.ShowStats();
+                    pause();
                     return true;
                 }
                 else
@@ -109,33 +129,7 @@ namespace CA3
             return true;
         }
 
-
-        private static void showScore(PlayerStatTracker playerStats)
-        {
-            Console.Clear();
-            Logger.LogWithColor("=====Score=====", ConsoleColor.DarkGreen, spacing: 5, makeNewLn: true);
-            Logger.Log($"Funds: {playerStats.PlayerFunds}", 9);
-            Logger.Log("Wins: " + playerStats.Wins, 9);
-            Logger.Log("Loses: " + playerStats.Losses, 9);
-            Logger.Log("Draws: " + playerStats.Draws, 9);
-            Logger.LogWithColor("================\n", ConsoleColor.DarkGreen, spacing: 5);
-            pause();
-        }
-
-        private static void gameOverScreen(PlayerStatTracker playerStats) 
-        {
-            for (int i = 0; i < 5; i++)
-            {
-                Logger.LogWithColor(GAME_OVER, ConsoleColor.Red);
-                Thread.Sleep(750);
-
-                Console.Clear(); 
-                Thread.Sleep(250); 
-            }
-
-            showScore(playerStats);
-        }
-
+        //pause app and wait for user input to continue
         private static void pause() 
         {
             Logger.Log("Press Any Key To Continue", 1, true);
@@ -143,30 +137,33 @@ namespace CA3
             Console.Clear();
         }
 
+        //suffle deck and deal first cards, hide dealer's 2nd card
         private static void startRound(Deck deck, List<Card> dealersHand, List<Card> playersHand)
         {
             Logger.LogWithColor("----------First Draw----------", ConsoleColor.White, ConsoleColor.DarkGray);
-
+           
+            deck.ShuffleDeck();
             dealersHand.Add(deck.DrawCard());
             playersHand.Add(deck.DrawCard());
             dealersHand.Add(deck.DrawCard());
             playersHand.Add(deck.DrawCard());
 
-            Logger.LogWithColor("Player's Hand", ConsoleColor.Green, spacing: 5, makeNewLn: true);
+            Logger.LogWithColor("Player's Hand", ConsoleColor.Green, spacing: 5, newLn: true);
             showHand(playersHand, false);
 
-            Logger.LogWithColor("Dealer's Hand", ConsoleColor.Magenta, spacing: 5, makeNewLn: true);
+            Logger.LogWithColor("Dealer's Hand", ConsoleColor.Magenta, spacing: 5, newLn: true);
             showHand(dealersHand, true);
+
         }
 
         //player's turn logic
         private static bool playersTurn(Deck deck, List<Card> playersHand)
         {
-            Logger.LogWithColor("----------Your Turn----------", ConsoleColor.White, ConsoleColor.Green, makeNewLn: true);
+            Logger.LogWithColor("----------Your Turn----------", ConsoleColor.White, ConsoleColor.Green, newLn: true);
 
             while (true) 
             {
-                Logger.LogWithColor("Your Hand", ConsoleColor.Green, spacing: 5, makeNewLn: true);
+                Logger.LogWithColor("Your Hand", ConsoleColor.Green, spacing: 5, newLn: true);
                 showHand(playersHand, false);
                 Console.WriteLine("\nStick Or Twist? Type s Or t");
                 string stickTwist = Console.ReadLine().ToLower();
@@ -178,7 +175,7 @@ namespace CA3
 
                     if (getHandValue(playersHand) > 21)
                     {
-                        Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, makeNewLn: true);
+                        Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, newLn: true);
                         return true;
                     }
  
@@ -200,7 +197,7 @@ namespace CA3
         //dealer's turn logic
         private static bool dealersTurn(Deck deck, List<Card> dealersHand, List<Card> playersHand, ref bool isFirstRound) 
         {
-            Logger.LogWithColor("----------Dealer's Turn----------", ConsoleColor.White, ConsoleColor.Magenta, makeNewLn: true);
+            Logger.LogWithColor("----------Dealer's Turn----------", ConsoleColor.White, ConsoleColor.Magenta, newLn: true);
             if (isFirstRound)
             {
                 isFirstRound = false;
@@ -208,7 +205,7 @@ namespace CA3
 
             while (true) 
             {
-                Logger.LogWithColor("Dealer's Hand", ConsoleColor.Magenta, spacing: 5, makeNewLn: true);
+                Logger.LogWithColor("Dealer's Hand", ConsoleColor.Magenta, spacing: 5, newLn: true);
                 showHand(dealersHand, false);
                 int dealerHandValue = getHandValue(dealersHand);
                 int playerHandValue = getHandValue(playersHand);
@@ -225,7 +222,7 @@ namespace CA3
                 }
                 else
                 {
-                    Logger.LogWithColor("Dealer Has Stuck", ConsoleColor.Magenta, spacing: 5, makeNewLn: true);
+                    Logger.LogWithColor("Dealer Has Stuck", ConsoleColor.Magenta, spacing: 5, newLn: true);
                     return false;
                 }
             }
@@ -241,15 +238,7 @@ namespace CA3
             hand.Add(deck.DrawCard());
         }
 
-
-        private static void showHandWithColor(List<Card> hand, string msg, ConsoleColor color)
-        {
-            Logger.LogWithColor("=========", color, spacing: 5, makeNewLn: true);
-            Logger.LogWithColor($"{msg}", ConsoleColor.White, color, spacing: 5);
-            Logger.LogWithColor("=========", color, spacing: 5);
-            showHand(hand, false);
-        }
-
+        //iterate through list of cards, showing their rank and suit. Option to hide 2nd card for dealer if first round
         private static void showHand(List<Card> hand, bool isFirstDraw)
         {
             Logger.Log("-------------", 5);
@@ -268,6 +257,16 @@ namespace CA3
             Logger.Log("-------------", 5);
         }
 
+        //call show hand but with extra decoration
+        private static void showHandWithColor(List<Card> hand, string msg, ConsoleColor color)
+        {
+            Logger.LogWithColor("=========", color, spacing: 5, newLn: true);
+            Logger.LogWithColor($"{msg}", ConsoleColor.White, color, spacing: 5);
+            Logger.LogWithColor("=========", color, spacing: 5);
+            showHand(hand, false);
+        }
+
+        //reset deck, hands and other relevant values
         private static void resetGame(Deck deck, List<Card> dealersHand, List<Card> playersHand, PlayerStatTracker playerStats, ref bool isInMenu)
         {
             isInMenu = true;
@@ -275,11 +274,11 @@ namespace CA3
             playerStats.CurrentBet = 0;
             dealersHand.Clear();
             playersHand.Clear();
-            deck.ResetDeck();
-            deck.ShuffleDeck();
+            deck.InitializeDeck();
         }
 
-        //get numeric value of hand
+        //get numeric value of hand.
+        //initially treat ace as having value of 11, then retroactively adjust the value of aces in hand till not bust
         private static int getHandValue(List<Card> hand)
         {
             int handValue = 0;
@@ -290,22 +289,14 @@ namespace CA3
                 {
                     aceCount++;
                 }
-                else
-                {
-                    handValue += card.CardValue;
-                }
+                handValue += card.CardValue;
             }
 
-            for (int i = 0; i < aceCount; i++)
+            //need to retroactively adjust value of aces till no aces or hand value is less than 21
+            while (handValue > 21 && aceCount > 0)
             {
-                if (handValue + 11 <= 21)
-                {
-                    handValue += 11;
-                }
-                else
-                {
-                    handValue += 1;
-                }
+                handValue -= 10; 
+                aceCount--;
             }
 
             return handValue;

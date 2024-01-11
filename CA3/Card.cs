@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace CA3
 {
+    //class to represent cards
     public class Card
     {
-
         public enum CardSuit
         {
             Hearts, 
@@ -17,9 +17,10 @@ namespace CA3
             Spades
         }
 
+        //enum values used to determine card value
         public enum CardRank
         {
-            One = 1, 
+            Ace = 0,
             Two = 2,
             Three = 3, 
             Four = 4, 
@@ -31,13 +32,13 @@ namespace CA3
             Ten = 10, 
             Jack = 11, 
             Queen = 12, 
-            King = 13, 
-            Ace = 0
+            King = 13
         }
 
         public CardSuit Suit { get; private set; }
         public CardRank Rank { get; private set; }
 
+        //if card has enum value over 10, it should equal 10
         public int CardValue 
         {
             get
@@ -46,6 +47,10 @@ namespace CA3
                 if (cardValue > 10)
                 {
                     return 10;
+                }
+                if (Rank == CardRank.Ace) 
+                {
+                    return 11;
                 }
                 return cardValue;
             }
@@ -64,6 +69,8 @@ namespace CA3
             return $"{Rank} of {Suit}";
         }
 
+
+        //relate each suit to a color for logging
         private static ConsoleColor getSuitColor(CardSuit suit)
         {
             switch (suit)
