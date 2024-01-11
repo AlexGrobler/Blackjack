@@ -276,6 +276,9 @@ namespace CA3
                         twist(deck, playersHand);
                         if (getHandValue(playersHand) > 21)
                         {
+                            Console.Clear();
+                            Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, newLn: true);
+                            showHand(playersHand, false);
                             Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, newLn: true);
                             pause();
                             return true;
