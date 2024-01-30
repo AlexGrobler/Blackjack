@@ -10,36 +10,6 @@ namespace CA3
 {
     internal class Program
     {
-        //Used ASCII generator to create graphics
-        const string BLACKJACK_LOGO = "\n" +
-            "        ______ _            _    _            _    \r\n" +
-            "        | ___ \\ |          | |  (_)          | |   \r\n" +
-            "        | |_/ / | __ _  ___| | ___  __ _  ___| | __\r\n" +
-            "        | ___ \\ |/ _` |/ __| |/ / |/ _` |/ __| |/ /\r\n" +
-            "        | |_/ / | (_| | (__|   <| | (_| | (__|   < \r\n" +
-            "        \\____/|_|\\__,_|\\___|_|\\_\\ |\\__,_|\\___|_|\\_\\\r\n" +
-            "                               _/ |                \r\n" +
-            "                              |__/                 ";
-        const string CARDS_GRAPHIC = "" +
-            "             .------..------..------..------.\r\n" +
-            "             |A.--. ||J.--. ||Q.--. ||K.--. |\r\n" +
-            "             | :/\\: || :(): || (\\/) || :/\\: |\r\n" +
-            "             | (__) || ()() || :\\/: || :\\/: |\r\n" +
-            "             | '--'A|| '--'J|| '--'Q|| '--'K|\r\n" +
-            "             `------'`------'`------'`------'";
-        const string GAME_OVER = "\n\n\n\n\n\n" +
-            "                                   ___   ___  __ __  ___       ___  _ _  ___  ___ \r\n" +
-            "                                  /  _> | . ||  \\  \\| __>     | . || | || __>| . \\\r\n" +
-            "                                  | <_/\\|   ||     || _>      | | || ' || _> |   /\r\n" +
-            "                                  `____/|_|_||_|_|_||___>     `___'|__/ |___>|_\\_\\\r\n";
-
-        const string YOU_WIN = "\n\n\n\n\n\n" +
-            "                                 __   __            _    _ _         _ \r\n" +
-            "                                 \\ \\ / /           | |  | (_)       | |\r\n" +
-            "                                  \\ V /___  _   _  | |  | |_ _ __   | |\r\n" +
-            "                                   \\ // _ \\| | | | | |/\\| | | '_ \\  | |\r\n" +
-            "                                   | | (_) | |_| | \\  /\\  / | | | | |_|\r\n" +
-            "                                   \\_/\\___/ \\__,_|  \\/  \\/|_|_| |_| (_)\r\n";
 
         static void Main(string[] args)
         {
@@ -50,7 +20,6 @@ namespace CA3
             bool dealerBusts = false;
             bool playerBusts = false;
             bool keepAppRunning = true;
-
 
             Deck deck = new Deck();
             StatTracker stats = new StatTracker(0, 0, 0, 1000);    
@@ -109,8 +78,8 @@ namespace CA3
 
         private static void showLogo() 
         {
-            Logger.LogWithColor(BLACKJACK_LOGO, ConsoleColor.White);
-            Logger.LogWithColor(CARDS_GRAPHIC, ConsoleColor.White);
+            Logger.LogWithColor(Logger.BLACKJACK_LOGO, ConsoleColor.White);
+            Logger.LogWithColor(Logger.CARDS_GRAPHIC, ConsoleColor.White);
         }
 
         //main menu for app that will be returned to until the app is closed
@@ -160,7 +129,7 @@ namespace CA3
             return true;
         }
 
-
+        //handles player tutorial
         private static void tutorial() 
         {
             Console.Clear();
@@ -176,26 +145,13 @@ namespace CA3
             Logger.LogWithColor("Card Values", ConsoleColor.White, spacing: 20, newLn: true);
             Logger.LogWithColor("---------------------", ConsoleColor.White, spacing: 15);
             Logger.Log("All numbered cards are worth the same amount: ", 5, true);
-            logCardInfoGraphic("5", "5");
+            Logger.LogCardInfoGraphic("5", "5");
             Logger.Log("Jack, Queen and King are all worth 10: ", 5, true);
-            logCardInfoGraphic("K", "10");
+            Logger.LogCardInfoGraphic("K", "10");
             Logger.Log("An Ace can be worth 1 or 11, whichever helps the player the most: ", 5, true);
-            logCardInfoGraphic("A", "1/11");
+            Logger.LogCardInfoGraphic("A", "1/11");
         }
 
-        //create card graphic with specified rank and value for the tutorial
-        private static void logCardInfoGraphic(string rank, string value)
-        {
-            string card = "" +
-            " .------.\r\n" +
-            $" |{rank}.--. |\r\n" +
-            $" | :/\\: |      = {value}\r\n" +
-            " | (__) |\r\n" +
-            $" | '--'{rank}|\r\n" +
-            " `------'";
-
-            Logger.LogWithColor(card, ConsoleColor.White);
-        }
 
         //pause app and wait for user input to continue
         private static void pause() 
@@ -210,11 +166,11 @@ namespace CA3
         {
             if (stats.GameOver)
             {
-                Logger.DoTextAnimation(GAME_OVER, ConsoleColor.Red);
+                Logger.DoTextAnimation(Logger.GAME_OVER, ConsoleColor.Red);
             }
             if (stats.GameWon)
             {
-                Logger.DoTextAnimation(YOU_WIN, ConsoleColor.Green);
+                Logger.DoTextAnimation(Logger.YOU_WIN, ConsoleColor.Green);
             }
 
             Logger.Log("Would You Like To Try Again? Type y Or n", 1, true);
@@ -277,7 +233,7 @@ namespace CA3
                         if (getHandValue(playersHand) > 21)
                         {
                             Console.Clear();
-                            Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, newLn: true);
+                            Logger.LogWithColor("================BUST================\n", ConsoleColor.White, ConsoleColor.Red, newLn: true);
                             showHand(playersHand, false);
                             Logger.LogWithColor("================BUST================", ConsoleColor.White, ConsoleColor.Red, newLn: true);
                             pause();

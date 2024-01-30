@@ -58,8 +58,8 @@ namespace CA3
             return drawnCard;
         }
 
-        //For initialzing and reseting the deck. Use card class's enums to iterate all the possible the suits, then all the poissible ranks
-        //ensures 52 cards are added without manually creating each card
+        //For initialzing and reseting the deck. Use card class's enums to iterate all the possible suits, then all the poissible ranks
+        //ensures 52 cards are added without manually instantiating each card
         public void InitializeDeck() 
         {
             CardDeck.Clear();

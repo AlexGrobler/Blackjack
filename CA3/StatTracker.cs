@@ -159,7 +159,6 @@ namespace CA3
         //get player's bet, make sure it's a valid amount
         public void GetPlayerBet()
         {
-            
             CurrentBet = 0;
             Logger.Log($"Your Current Balance: {PlayerFunds:C}", newLn: true);
             Logger.Log($"Dealer's Balance: {DealerFunds:C}", newLn: true);
